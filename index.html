@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Vote Road Level</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .content {
+            text-align: center;
+            width: 100%;
+        }
+        .require {
+            text-align: left;
+            width: 90%;
+            margin: 0 auto;
+            overflow-y: auto;
+            height: 50vh;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/umd/uuidv4.min.js"></script>
+</head>
+<body>
+<div class="content">
+    <h1>Welcome to Road Condition Rating System (PSCI)</h1>
+    <div class="require">
+        <p>
+            - Rating 10 (Excellent): Roads with no visible defects, routine maintenance.<br>
+            - Rating 9 (Very Good): Less than 10% surface defects, minor issues like ravelling or bleeding.<br>
+            - Rating 8 (Good): 10% to 30% surface defects, minor restoration needed for skid resistance.<br>
+            - Rating 7 (Good): More than 30% surface defects, no structural distresses.<br>
+            - Rating 6 (Fair): Some cracking and patching in good condition, slight surface distortions.<br>
+            - Rating 5 (Fair): Noticeable cracking (>20%), patching in fair condition, significant distortions.<br>
+            - Rating 4 (Poor): Structural distresses present like rutting and cracking, 5% to 25% of surface affected.<br>
+            - Rating 3 (Poor): 25% to 50% of surface with significant structural distresses, more frequent potholes.<br>
+            - Rating 2 (Very Poor): Severe structural distresses over 50% of surface, road reconstruction needed.<br>
+            - Rating 1 (Failed): Complete failure, extensive loss of pavement surface, deep potholes.<br>
+        </p>
+    </div>
+    <form id="ratingForm">
+        <div id="imagesContainer"></div>
+        <button type="submit">submit</button>
+    </form>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeQxo9n_t7CWJ4z0toIcTl7EtM2NKx_nE",
+            authDomain: "web6400.firebaseapp.com",
+            databaseURL: "https://web6400-default-rtdb.firebaseio.com",
+            projectId: "web6400",
+            storageBucket: "web6400.appspot.com",
+            messagingSenderId: "43994478239",
+            appId: "1:43994478239:web:fdd259eb55559aa39794aa",
+            measurementId: "G-3QWTDFLBY0",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const images = [
+            'Centre_Cork@51.87713725_-8.484910847_107.2428042.jpg',
+            'Centre_Cork@51.87713874_-8.484931757_-1.0.jpg',
+            'Centre_Cork@51.87713966_-8.484948068_127.6323622.jpg',
+            'Centre_Cork@51.87716364_-8.484992031_-1.0.jpg',
+            'Centre_Cork@51.87717753_-8.485017082_116.1208115.jpg',
+            'Centre_Cork@51.87721357_-8.485067429_-1.0.jpg',
+            'Centre_Cork@51.87851252_-8.484463364_9.951418877.jpg',
+            'Centre_Cork@51.87864273_-8.484501017_10.51813698.jpg',
+            'Centre_Cork@51.87870061_-8.484615541_322.7959353.jpg',
+            'Centre_Cork@51.8787202_-8.484703844_287.6641541.jpg',
+            'Centre_Cork@51.87872962_-8.484842466_287.6641541.jpg',
+            'Centre_Cork@51.87874543_-8.484963318_287.0073242.jpg',
+            'Centre_Cork@51.87876764_-8.485060143_287.0073242.jpg',
+            'Centre_Cork@51.87879499_-8.485163922_287.0073242.jpg',
+            'Centre_Cork@51.89194607_-8.493493129_84.24005127.jpg',
+            'Centre_Cork@51.89195582_-8.49334117_84.24005127.jpg',
+            'Centre_Cork@51.89197157_-8.493189624_82.38153839.jpg',
+            'Centre_Cork@51.89198685_-8.49305473_82.38153839.jpg',
+            'Centre_Cork@51.89200136_-8.492934977_80.95847321.jpg',
+            'Centre_Cork@51.89201507_-8.492836369_80.95847321.jpg',
+            'Centre_Cork@51.89202702_-8.492559013_80.56124878.jpg',
+            'Centre_Cork@51.89202845_-8.492473597_80.75061798.jpg',
+            'Centre_Cork@51.89212826_-8.491514385_79.88612366.jpg',
+            'Centre_Cork@51.89213634_-8.491524544_79.88612366.jpg',
+            'Centre_Cork@51.89214078_-8.491433863_79.57827759.jpg',
+            'Centre_Cork@51.8921447_-8.491522342_79.88612366.jpg',
+            'Centre_Cork@51.89214529_-8.491546471_79.88612366.jpg',
+            'Centre_Cork@51.89215935_-8.491295011_79.57827759.jpg',
+            'Centre_Cork@51.89216905_-8.491184981_79.57827759.jpg',
+            'Centre_Cork@51.89217953_-8.491072257_79.84993744.jpg',
+            'Centre_Cork@51.8921924_-8.490967046_79.84993744.jpg',
+            'Centre_Cork@51.89220298_-8.490863977_79.84993744.jpg',
+            'Centre_Cork@51.89221602_-8.490754108_79.69316864.jpg',
+            'Centre_Cork@51.89222861_-8.490651559_79.69316864.jpg',
+            'Centre_Cork@51.89224384_-8.490511002_79.68406677.jpg',
+            'Centre_Cork@51.8922587_-8.490390417_80.26269531.jpg',
+            'Centre_Cork@51.89226748_-8.490316342_81.07326508.jpg',
+            'Centre_Cork@51.89227594_-8.490228991_81.07326508.jpg',
+            'Centre_Cork@51.89228816_-8.490128662_78.7177887.jpg',
+            'Centre_Cork@51.89230287_-8.49002701_76.76215363.jpg',
+            'Centre_Cork@51.89231945_-8.489926253_74.34823608.jpg',
+            'Centre_Cork@51.89233976_-8.489825647_71.60909271.jpg',
+            'Centre_Cork@51.8923628_-8.489705526_71.60909271.jpg',
+            'Centre_Cork@51.89239097_-8.48959459_66.45347595.jpg',
+            'Centre_Cork@51.89264796_-8.48881512_58.14277267.jpg',
+            'Centre_Cork@51.89269386_-8.488684422_58.14277267.jpg',
+            'Centre_Cork@51.89274256_-8.48855821_58.14277267.jpg',
+            'Centre_Cork@51.8932712_-8.486815096_68.4956131.jpg',
+            'Centre_Cork@51.89330688_-8.486670031_68.4956131.jpg',
+            'Centre_Cork@51.89334277_-8.486524699_68.4956131.jpg',
+            'Centre_Cork@51.89338023_-8.486382385_67.14330292.jpg',
+            'Centre_Cork@51.89341684_-8.486249226_67.14330292.jpg',
+            'Centre_Cork@51.89345444_-8.486116588_64.39278412.jpg',
+        ];
+        const container = document.getElementById('imagesContainer');
+
+        images.forEach((image, index) => {
+            const div = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = `pic/${image}`;
+            img.alt = `Image ${index + 1}`;
+            img.style.width = '640px';
+            div.appendChild(img);
+            div.appendChild(document.createElement('br'));
+
+            for (let i = 1; i <= 10; i++) {
+                const label = document.createElement('label');
+                label.innerText = `${i} `;
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `rating-${index}`;
+                radio.value = i;
+                div.appendChild(radio);
+                div.appendChild(label);
+            }
+            container.appendChild(div);
+            container.appendChild(document.createElement('br'));
+        });
+
+        document.getElementById('ratingForm').onsubmit = function(event) {
+            event.preventDefault();
+            const data = [];
+            images.forEach((image, index) => {
+                const radios = document.getElementsByName(`rating-${index}`);
+                radios.forEach(radio => {
+                    if (radio.checked) {
+                        data.push({image: image, rating: radio.value});
+                    }
+                });
+            });
+            const uuid = uuidv4(); // 生成唯一的 UUID
+            database.ref('ratings/'+uuid).set(data, function(error) {
+                if (error) {
+                    alert('Data could not be saved. ' + error);
+                } else {
+                    alert('Data saved successfully.');
+                    localStorage.setItem('ratings', JSON.stringify(data));
+                    window.location.href = 'result.html'; // Redirect to results page
+                }
+            });
+        };
+    });
+</script>
+<script src="script.js"></script>
+</body>
+</html>

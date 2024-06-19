@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>评级结果</title>
+</head>
+<body>
+<h1>result</h1>
+<div id="resultsContainer"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const data = JSON.parse(localStorage.getItem('ratings'));
+        const container = document.getElementById('resultsContainer');
+        if (data) {
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.textContent = `${item.image}   level is       ${item.rating}`;
+                container.appendChild(div);
+            });
+        } else {
+            container.textContent = 'no data';
+        }
+    });
+</script>
+</body>
+</html>
